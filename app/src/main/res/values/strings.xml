@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Phonebook</string>
+    <string name="placeholder_text">You have no contacts! \n Use the (+) icon to add some.</string>
 </resources>
