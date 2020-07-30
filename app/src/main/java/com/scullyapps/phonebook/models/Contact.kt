@@ -12,7 +12,7 @@ import java.util.regex.Matcher
 
 @Entity
 data class Contact(
-    @PrimaryKey val cid : Int,
+    @PrimaryKey(autoGenerate = true) val cid : Int = 0,
     @ColumnInfo(name="first_name") val firstName: String,
     @ColumnInfo(name="second_name") val secondName: String,
     @ColumnInfo(name="email") val email: String,
@@ -21,6 +21,10 @@ data class Contact(
 ) {
     @Ignore
     private val TAG: String = "Contact"
+
+    constructor(first: String, second: String, email: String, phone: String, address: String? ) : this(0, first, second, email, phone, address) {
+
+    }
 
     companion object {
         fun isValidPhoneNumber(num : String) : Boolean {

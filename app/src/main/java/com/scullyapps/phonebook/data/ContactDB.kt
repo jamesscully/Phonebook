@@ -17,6 +17,7 @@ abstract class ContactDB : RoomDatabase() {
     companion object {
 
         private var db : ContactDB? = null
+        private var testdb : ContactDB? = null
 
         fun getInstance(): ContactDB {
             if(db == null) {
@@ -24,6 +25,19 @@ abstract class ContactDB : RoomDatabase() {
             }
 
             return db as ContactDB
+        }
+
+        fun getTestInstance(): ContactDB {
+            if(testdb == null) {
+                testdb = Room.databaseBuilder(App.getContext(), ContactDB::class.java, "test_contact").build()
+            }
+
+            return testdb as ContactDB
+        }
+
+        fun getDao(): ContactDAO {
+            val db = getInstance()
+            return db.contactDAO()
         }
     }
 }

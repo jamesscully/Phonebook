@@ -2,6 +2,8 @@ package com.scullyapps.phonebook.models
 
 
 import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -10,7 +12,7 @@ import androidx.room.Query
 @Dao
 interface ContactDAO {
     @Query("SELECT * FROM contact")
-    fun getAll(): List<Contact>
+    fun getAll(): LiveData<List<Contact>>
 
     @Query("SELECT * FROM contact WHERE first_name LIKE :first AND second_name LIKE :second")
     fun getByName(first : String, second : String) : Contact
