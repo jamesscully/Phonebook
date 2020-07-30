@@ -8,6 +8,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
+import java.io.Serializable
 import java.util.regex.Matcher
 
 @Entity
@@ -18,7 +19,7 @@ data class Contact(
     @ColumnInfo(name="email") val email: String,
     @ColumnInfo(name="phone") val phone: String,
     @ColumnInfo(name="address") val address: String?
-) {
+) : Serializable {
     @Ignore
     private val TAG: String = "Contact"
 

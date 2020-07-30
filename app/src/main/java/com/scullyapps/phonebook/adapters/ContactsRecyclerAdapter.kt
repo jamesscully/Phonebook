@@ -1,6 +1,7 @@
 package com.scullyapps.phonebook.adapters
 
 
+import android.content.Context
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -10,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.scullyapps.phonebook.R
 import com.scullyapps.phonebook.models.Contact
 
-class ContactsRecyclerAdapter() : RecyclerView.Adapter<ContactsRecyclerAdapter.ViewHolder>() {
+class ContactsRecyclerAdapter(private val listener: (Contact) -> Unit) : RecyclerView.Adapter<ContactsRecyclerAdapter.ViewHolder>() {
     private val TAG: String = "ContactsRecyclerAdapter"
 
     private var dataset = emptyList<Contact>()
@@ -33,6 +34,11 @@ class ContactsRecyclerAdapter() : RecyclerView.Adapter<ContactsRecyclerAdapter.V
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val contact = dataset[position]
         holder.txtName.text = (contact.firstName + " " +  contact.secondName)
+
+        // fires the lambda we passed to the adapter, so that we can easily capture onclick
+        holder.itemView.setOnClickListener {
+            listener.invoke(contact)
+        }
     }
 
     inner class ViewHolder(vh : View) : RecyclerView.ViewHolder(vh) {

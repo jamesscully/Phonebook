@@ -1,13 +1,17 @@
 package com.scullyapps.phonebook
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.room.Room
 import com.scullyapps.phonebook.adapters.ContactsRecyclerAdapter
 import com.scullyapps.phonebook.data.ContactDB
@@ -27,17 +31,32 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val recycler = contacts_recyclerview
-        val adapter = ContactsRecyclerAdapter()
+
+        // perform actions on click
+        val adapter = ContactsRecyclerAdapter { contact ->
+            val intent = Intent(this, EditDetailsActivity::class.java)
+
+            intent.putExtra("state", EditDetailsActivity.State.EDITING)
+            intent.putExtra("contact", contact)
+
+            startActivity(intent)
+        }
+
         recycler.adapter = adapter
         recycler.layoutManager = LinearLayoutManager(this)
 
+        // If we have no contacts, show placeholder; else update recycler
         model.contacts.observe(this, Observer {contacts ->
             if(contacts.isNotEmpty()) {
                 main_placeholder.visibility = View.INVISIBLE
                 adapter.setData(contacts)
                 adapter.notifyDataSetChanged()
+            } else {
+                main_placeholder.visibility = View.VISIBLE
             }
         })
+
+
 
     }
 }
