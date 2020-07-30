@@ -5,9 +5,12 @@ import android.util.Log
 import android.util.Patterns
 import androidx.core.util.PatternsCompat
 import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import java.util.regex.Matcher
 
+@Entity
 data class Contact(
     @PrimaryKey val cid : Int,
     @ColumnInfo(name="first_name") val firstName: String,
@@ -16,8 +19,8 @@ data class Contact(
     @ColumnInfo(name="phone") val phone: String,
     @ColumnInfo(name="address") val address: String?
 ) {
+    @Ignore
     private val TAG: String = "Contact"
-
 
     companion object {
         fun isValidPhoneNumber(num : String) : Boolean {
