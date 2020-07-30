@@ -63,8 +63,58 @@ class ContactDatabaseTest {
         val first = "Test"
         val second = "Name"
 
+        val contactA = Contact(first, second, "Test@gmail.com", "0782725502", "25 Road")
+        val contactB = Contact(first, "Bloggs", "Test@gmail.com", "0782725502", "25 Road")
+
+        dao.insert(contactA, contactB)
+
         val ref = dao.getByName(first, second)
 
-        Log.d(TAG, "Found contact: $ref")
+        dao.delete(ref)
+
+        // test that we have deleted contact A
+        assertNull(dao.getByName(first, second))
+
+        // test that contact B is not deleted (similar last names)
+        assertNotNull(dao.getByName(first, "Bloggs"))
+    }
+
+    @Test
+    fun getAllTest() {
+        dao.insert(Contact("Test", "Name", "test@gmail.com", "0000000000", "address"))
+        dao.insert(Contact("Test", "Name", "test@gmail.com", "0000000000", "address"))
+        dao.insert(Contact("Test", "Name", "test@gmail.com", "0000000000", "address"))
+
+        assertEquals(3, dao.getAll().size)
+
+        dao.insert(Contact("Test", "Name", "test@gmail.com", "0000000000", "address"))
+        dao.insert(Contact("Test", "Name", "test@gmail.com", "0000000000", "address"))
+
+        assertEquals(5, dao.getAll().size)
+    }
+
+    @Test
+    fun getAllSortedTest() {
+
+        val contactA = Contact("Aberdeen", "Buckingham", "test@gmail.com", "07827275818", "Address")
+        val contactC = Contact("Coventry", "Zelda", "test@gmail.com", "07827275818", "Address")
+        val contactB = Contact("Buckingham", "Zelda", "test@gmail.com", "07827275818", "Address")
+
+        dao.insert(contactA, contactB, contactC)
+
+        var entries = dao.getAll()
+
+        Log.d(TAG, "Found entries (${entries.size}): \n $entries")
+
+        assertTrue(contactA.equalByData(entries[0]))
+        assertTrue(contactB.equalByData(entries[1]))
+        assertTrue(contactC.equalByData(entries[2]))
+
+        entries = dao.getAllDesc()
+
+        assertTrue(contactA.equalByData(entries[2]))
+        assertTrue(contactB.equalByData(entries[1]))
+        assertTrue(contactC.equalByData(entries[0]))
+
     }
 }

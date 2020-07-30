@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.room.Room
 import com.scullyapps.phonebook.data.ContactDB
+import com.scullyapps.phonebook.data.ContactRepository
 import com.scullyapps.phonebook.models.Contact
 import com.scullyapps.phonebook.viewmodels.MainActivityViewModel
 
@@ -20,16 +21,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        // we'll only need one instance of the database
-        val db = ContactDB.getDao()
-
-        model.contacts.observe(this, Observer {
-            Log.d(TAG, it.size.toString())
-        })
-
-
-        model.contacts = db.getAll()
 
 
     }

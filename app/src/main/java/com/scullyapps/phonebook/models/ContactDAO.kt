@@ -11,8 +11,14 @@ import androidx.room.Query
 
 @Dao
 interface ContactDAO {
-    @Query("SELECT * FROM contact")
-    fun getAll(): LiveData<List<Contact>>
+    @Query("SELECT * FROM contact ORDER BY first_name ASC")
+    fun getAll(): List<Contact>
+
+    @Query("SELECT * FROM contact ORDER BY first_name DESC")
+    fun getAllDesc(): List<Contact>
+
+    @Query("SELECT * FROM contact WHERE cid=:id")
+    fun getById(id : Int) : Contact
 
     @Query("SELECT * FROM contact WHERE first_name LIKE :first AND second_name LIKE :second")
     fun getByName(first : String, second : String) : Contact
@@ -28,4 +34,7 @@ interface ContactDAO {
 
     @Delete
     fun delete(contact: Contact)
+
+    @Query("DELETE FROM contact WHERE cid=:id")
+    fun deleteById(id: Int)
 }

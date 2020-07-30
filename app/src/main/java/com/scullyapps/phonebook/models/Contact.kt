@@ -22,8 +22,17 @@ data class Contact(
     @Ignore
     private val TAG: String = "Contact"
 
-    constructor(first: String, second: String, email: String, phone: String, address: String? ) : this(0, first, second, email, phone, address) {
+    constructor(first: String, second: String, email: String, phone: String, address: String? ) : this(0, first, second, email, phone, address) {}
 
+    /**
+     * Compare contacts based on data only, not their _id
+     */
+    fun equalByData(that: Contact) : Boolean {
+        return (this.address == that.address) &&
+               (this.email == that.email) &&
+                (this.firstName == that.firstName) &&
+                (this.secondName == that.secondName) &&
+                (this.phone == that.phone)
     }
 
     companion object {
