@@ -25,6 +25,9 @@ class ContactValidationTest {
 
     @Test
     fun testValidEmail() {
+        assertTrue(Contact.isValidEmail("james.will.scully@gmail.com"))
+        assertTrue(Contact.isValidEmail("google@gmail.com"))
 
+        assertFalse(Contact.isValidEmail("james.will.sc!!!ully@gmail.com"))
     }
 }
