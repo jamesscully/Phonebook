@@ -3,4 +3,6 @@
     <string name="placeholder_text">You have no contacts! \n Use the (+) icon to add some.</string>
     <string name="error_email">Format: user@domain.com</string>
     <string name="error_phone">Enter a valid UK phone number</string>
+    <string name="form_btn_update">Update</string>
+    <string name="form_btn_create">Create</string>
 </resources>

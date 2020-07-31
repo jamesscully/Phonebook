@@ -9,7 +9,7 @@ import com.scullyapps.phonebook.models.Contact
 class ContactRepository {
     private val TAG: String = "ContactRepository"
 
-    val contacts :LiveData<List<Contact>> = ContactDB.getDao().getAll()
+    val contacts : LiveData<List<Contact>> = ContactDB.getDao().getAll()
 
 //    fun getAllContacts() : List<Contact>? {
 //        return getAllContactsTask().execute().get()
@@ -18,7 +18,7 @@ class ContactRepository {
 //    fun getContactById(id : Int) : Contact {
 //        return getContactByIdTask(id).execute().get()
 //    }
-
+//
 //    companion object {
 //        private val db : ContactDB = ContactDB.getInstance()
 //

@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.scullyapps.phonebook.EditDetailsActivity
+import com.scullyapps.phonebook.data.ContactRepository
 import com.scullyapps.phonebook.models.Contact
 
 class EditDetailsActivityViewModel : ViewModel() {
@@ -38,7 +39,7 @@ class EditDetailsActivityViewModel : ViewModel() {
     }
 
     fun buildContact(): Contact {
-        return Contact(firstName.value!!, secondName.value!!, email.value!!, phone.value!!, address.value)
+        return Contact(contact!!.cid, firstName.value!!, secondName.value!!, email.value!!, phone.value!!, address.value)
     }
 
 }

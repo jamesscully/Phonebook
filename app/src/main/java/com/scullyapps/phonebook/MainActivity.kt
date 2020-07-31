@@ -55,8 +55,5 @@ class MainActivity : AppCompatActivity() {
                 main_placeholder.visibility = View.VISIBLE
             }
         })
-
-
-
     }
 }

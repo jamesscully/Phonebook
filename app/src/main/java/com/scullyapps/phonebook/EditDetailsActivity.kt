@@ -10,6 +10,7 @@ import androidx.activity.viewModels
 import androidx.core.util.PatternsCompat
 import androidx.lifecycle.Observer
 import com.jakewharton.rxbinding.widget.RxTextView
+import com.scullyapps.phonebook.data.ContactDB
 import com.scullyapps.phonebook.models.Contact
 import com.scullyapps.phonebook.viewmodels.EditDetailsActivityViewModel
 import com.scullyapps.phonebook.viewmodels.MainActivityViewModel
@@ -44,12 +45,12 @@ class EditDetailsActivity : AppCompatActivity() {
 
                 State.EDITING -> {
                     enableEditing(true)
-                    btn_process.text = "Update"
+                    btn_process.text = getString(R.string.form_btn_update)
                 }
 
                 State.CREATING -> {
                     enableEditing(true)
-                    btn_process.text = "Create"
+                    btn_process.text = getString(R.string.form_btn_create)
                 }
 
                 null -> {
@@ -70,51 +71,74 @@ class EditDetailsActivity : AppCompatActivity() {
             fillForm()
         }
 
+        setupObservers()
+    }
+
+    private fun setupObservers() {
+        // Unvalidated - simply write to model
+        RxTextView.textChanges(etxt_edit_firstname).subscribe { s -> model.firstName.postValue(s.toString()) }
+        RxTextView.textChanges(etxt_edit_secondname).subscribe { s -> model.secondName.postValue(s.toString()) }
+        RxTextView.textChanges(etxt_edit_address).subscribe { s -> model.address.postValue(s.toString()) }
+
         RxTextView.textChanges(etxt_edit_email)
             .debounce(1000, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
             .subscribe({ s ->
-            if(Contact.isValidEmail(s.toString())) {
-                model.email.postValue(s.toString())
-            } else {
-                etxt_edit_email.error = getString(R.string.error_email)
-            }
-        }, {t: Throwable? -> Log.e(TAG, t.toString())})
+                // set validity flag in model
+                model.emailValid = Contact.isValidEmail(s.toString())
+
+                if(model.emailValid) {
+                    model.email.postValue(s.toString())
+                } else {
+                    etxt_edit_email.error = getString(R.string.error_email)
+                }
+
+                formValidation()
+            }, {t: Throwable? -> Log.e(TAG, t.toString())}
+            )
 
         RxTextView.textChanges(etxt_phonenumber)
             .debounce(1000, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
             .subscribe({s ->
-            if(Contact.isValidPhoneNumber(s.toString())) {
-                model.phone.postValue(s.toString())
-            } else {
-                etxt_phonenumber.error = getString(R.string.error_phone)
-            }
-        }, {t: Throwable? -> Log.e(TAG, t.toString())})
+                model.phoneValid = Contact.isValidPhoneNumber(s.toString())
+                if(model.phoneValid) {
+                    model.phone.postValue(s.toString())
+                } else {
+                    etxt_phonenumber.error = getString(R.string.error_phone)
+                }
+                formValidation()
+            }, {t: Throwable? -> Log.e(TAG, t.toString())})
+
     }
 
     private fun process() {
-        // is the form valid to be updated/created?
-        if(!formValidation())
-            return
+        val contact : Contact = model.buildContact()
+
+        when(model.state.value) {
+            State.EDITING -> {
+                // update
+                ContactDB.update(contact)
+            }
+
+            State.CREATING -> {
+                ContactDB.insert(contact)
+            }
+
+            State.VIEWING -> {
+                Log.w(TAG, "Attempt to save/update contact when in viewing mode?")
+            }
+        }
 
         Log.d(TAG, "Built contact: \n ${model.buildContact()}")
     }
 
-    private fun formValidation() : Boolean {
-        if(!Contact.isValidEmail(etxt_edit_email.text.toString())) {
-            // error in email
-            Toast.makeText(this, "Please enter a valid email", Toast.LENGTH_LONG).show()
-            return false
-        }
+    // trigger UI events if we're valid
+    private fun formValidation() {
 
-        if(!Contact.isValidPhoneNumber(etxt_phonenumber.text.toString())) {
-            // error in phone
-            Toast.makeText(this, "Please enter a valid UK phone number", Toast.LENGTH_LONG).show()
-            return false
-        }
+        // add flags for validity here
+        val formValid = (model.phoneValid && model.emailValid)
 
-        // If we've passed the above checks, then we're valid.
-        // Room will prevent against SQL injection
-        return true
+        // for now we only need a simple button disable/enable
+        btn_process.isEnabled = formValid
     }
 
     private fun fillForm() {

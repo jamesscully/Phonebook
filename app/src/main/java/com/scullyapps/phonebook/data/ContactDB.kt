@@ -39,5 +39,29 @@ abstract class ContactDB : RoomDatabase() {
             val db = getInstance()
             return db.contactDAO()
         }
+
+
+        // Wrapper functions
+
+        fun insert(c : Contact) {
+            val db = getInstance()
+            Thread {
+                db.contactDAO().insert(c)
+            }.start()
+        }
+
+        fun update(c : Contact) {
+            val db = getInstance()
+            Thread {
+                db.contactDAO().update(c)
+            }.start()
+        }
+
+        fun delete(c : Contact) {
+            val db = getInstance()
+            Thread {
+                db.contactDAO().delete(c)
+            }.start()
+        }
     }
 }
