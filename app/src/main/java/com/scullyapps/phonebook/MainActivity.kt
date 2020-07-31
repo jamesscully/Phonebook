@@ -42,14 +42,27 @@ class MainActivity : AppCompatActivity() {
         recycler.adapter = adapter
         recycler.layoutManager = LinearLayoutManager(this)
 
+        model.isSearching.observe(this, Observer {searching ->
+            Log.d(TAG, "Searching bool changed: $searching")
+            if(searching) {
+                txt_main_placeholder.setText(R.string.placeholder_text_searching)
+                supportActionBar?.title = ""
+            } else {
+                txt_main_placeholder.setText(R.string.placeholder_text)
+                supportActionBar?.title = getString(R.string.app_name)
+            }
+        })
+
         model.shownContacts.observe(this, Observer { contacts ->
-            Log.d(TAG, "Shown contacts was updated")
 
             if(contacts.isNullOrEmpty()) {
                 main_placeholder.visibility = View.VISIBLE
             } else {
                 main_placeholder.visibility = View.INVISIBLE
             }
+
+            if(model.isSearching.value == true && model.searchTerm.value?.isNotEmpty() == true)
+                txt_main_searchresults.text = getString(R.string.search_result_header, contacts.size, model.searchTerm.value)
 
             // if null, send empty list
             adapter.setData(contacts ?: emptyList())
@@ -90,6 +103,9 @@ class MainActivity : AppCompatActivity() {
         if(term.matches(Regex("^\\s*\$")) || term.isEmpty()){
             model.resetSearch()
         }
+
+        model.isSearching.value = true
+        model.searchTerm.value = term
 
         if(Contact.isValidEmail(term)) {
             Log.d(TAG, "Found valid email: $term")

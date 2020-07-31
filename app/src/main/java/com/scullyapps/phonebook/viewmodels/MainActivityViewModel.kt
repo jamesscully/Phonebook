@@ -16,6 +16,8 @@ class MainActivityViewModel : ViewModel() {
     // these are what are actually shown to the user
     var shownContacts = MutableLiveData<List<Contact>>()
 
+    var isSearching = MutableLiveData<Boolean>(false)
+    var searchTerm = MutableLiveData<String>("")
 
     init {
         updateShownContacts(repo.getAllContacts())
@@ -25,6 +27,8 @@ class MainActivityViewModel : ViewModel() {
         val list = repo.getAllContacts()
         Log.d(TAG, "Found list of contacts: $list")
         updateShownContacts(list)
+        isSearching.value = false
+        searchTerm.value = ""
     }
 
     // code before searching/updating can go here
