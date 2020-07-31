@@ -38,7 +38,6 @@ class ContactDatabaseTest {
     @After
     @Throws(IOException::class)
     fun closeDb() {
-        db.close()
         db.clearAllTables()
     }
 
@@ -85,12 +84,12 @@ class ContactDatabaseTest {
         dao.insert(Contact("Test", "Name", "test@gmail.com", "0000000000", "address"))
         dao.insert(Contact("Test", "Name", "test@gmail.com", "0000000000", "address"))
 
-        assertEquals(3, dao.getAll().size)
+        assertEquals(3, dao.getAllList().size)
 
         dao.insert(Contact("Test", "Name", "test@gmail.com", "0000000000", "address"))
         dao.insert(Contact("Test", "Name", "test@gmail.com", "0000000000", "address"))
 
-        assertEquals(5, dao.getAll().size)
+        assertEquals(5, dao.getAllList().size)
     }
 
     @Test
@@ -102,7 +101,7 @@ class ContactDatabaseTest {
 
         dao.insert(contactA, contactB, contactC)
 
-        var entries = dao.getAll()
+        var entries = dao.getAllList()
 
         Log.d(TAG, "Found entries (${entries.size}): \n $entries")
 
@@ -110,7 +109,7 @@ class ContactDatabaseTest {
         assertTrue(contactB.equalByData(entries[1]))
         assertTrue(contactC.equalByData(entries[2]))
 
-        entries = dao.getAllDesc()
+        entries = dao.getAllDescList()
 
         assertTrue(contactA.equalByData(entries[2]))
         assertTrue(contactB.equalByData(entries[1]))

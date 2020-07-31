@@ -14,6 +14,14 @@ interface ContactDAO {
     @Query("SELECT * FROM contact ORDER BY first_name DESC")
     fun getAllDesc(): LiveData<List<Contact>>
 
+    // Used for unit testing
+    @Query("SELECT * FROM contact ORDER BY first_name ASC")
+    fun getAllList(): List<Contact>
+
+    @Query("SELECT * FROM contact ORDER BY first_name DESC")
+    fun getAllDescList(): List<Contact>
+    //
+
     @Query("SELECT * FROM contact WHERE cid=:id")
     fun getById(id : Int) : Contact
 
@@ -34,7 +42,4 @@ interface ContactDAO {
 
     @Update
     fun update(contact: Contact)
-
-    @Query("DELETE FROM contact WHERE cid=:id")
-    fun deleteById(id: Int)
 }
