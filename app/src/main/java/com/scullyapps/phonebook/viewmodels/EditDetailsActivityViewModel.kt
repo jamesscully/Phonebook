@@ -19,14 +19,26 @@ class EditDetailsActivityViewModel : ViewModel() {
         value = EditDetailsActivity.State.VIEWING
     }
 
-    var firstName : String = ""
-    var secondName : String = ""
-    var email : String = ""
-    var phone : String = ""
-    var address : String = ""
+    var firstName   = MutableLiveData<String>("")
+    var secondName  = MutableLiveData<String>("")
+    var email       = MutableLiveData<String>("")
+    var phone       = MutableLiveData<String>("")
+    var address     = MutableLiveData<String>("")
+
+    var emailValid : Boolean = false
+    var phoneValid : Boolean = false
+
+    fun loadContact(c : Contact) {
+        contact = c
+        firstName.postValue(c.firstName)
+        secondName.postValue(c.secondName)
+        email.postValue(c.email)
+        phone.postValue(c.phone)
+        address.postValue(c.address)
+    }
 
     fun buildContact(): Contact {
-        return Contact(firstName, secondName, email, phone, address)
+        return Contact(firstName.value!!, secondName.value!!, email.value!!, phone.value!!, address.value)
     }
 
 }

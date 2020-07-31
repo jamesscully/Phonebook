@@ -1,4 +1,6 @@
 <resources>
     <string name="app_name">Phonebook</string>
     <string name="placeholder_text">You have no contacts! \n Use the (+) icon to add some.</string>
+    <string name="error_email">Format: user@domain.com</string>
+    <string name="error_phone">Enter a valid UK phone number</string>
 </resources>
