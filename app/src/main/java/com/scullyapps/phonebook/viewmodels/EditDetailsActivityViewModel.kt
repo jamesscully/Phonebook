@@ -39,10 +39,9 @@ class EditDetailsActivityViewModel : ViewModel() {
     }
 
     fun buildContact(): Contact {
-        if(contact != null)
-            return Contact(contact!!.cid, firstName.value!!, secondName.value!!, email.value!!, phone.value!!, address.value)
-        else
-            return Contact(0, firstName.value!!, secondName.value!!, email.value!!, phone.value!!, address.value)
+        // contact can be null if we're creating; passing 0 signals to autoincrement cid in db
+        val id : Int = contact?.cid ?: 0
+        return Contact(id, firstName.value!!, secondName.value!!, email.value!!, phone.value!!, address.value)
     }
 
 }

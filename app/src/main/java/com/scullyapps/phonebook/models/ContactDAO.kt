@@ -23,16 +23,19 @@ interface ContactDAO {
     //
 
     @Query("SELECT * FROM contact WHERE cid=:id")
-    fun getById(id : Int) : Contact
+    fun getById(id : Int) : LiveData<List<Contact>>
 
     @Query("SELECT * FROM contact WHERE first_name LIKE :first AND second_name LIKE :second")
     fun getByName(first : String, second : String) : Contact
 
     @Query("SELECT * FROM contact WHERE phone=:number")
-    fun getByPhoneNum(number : String) : Contact
+    fun getByPhoneNum(number : String) : List<Contact>
 
     @Query("SELECT * FROM contact WHERE email=:email")
-    fun getByEmail(email : String) : Contact
+    fun getByEmail(email : String) : LiveData<List<Contact>>
+
+    @Query("SELECT * FROM contact WHERE email=:email")
+    fun getByEmailList(email : String) : List<Contact>
 
     @Insert
     fun insert(vararg contacts: Contact)

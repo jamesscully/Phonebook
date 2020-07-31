@@ -116,4 +116,15 @@ class ContactDatabaseTest {
         assertTrue(contactC.equalByData(entries[0]))
 
     }
+
+    @Test
+    fun getByEmail() {
+        val contactA = Contact("Aberdeen", "Buckingham", "test@gmail.com", "07827275818", "Address")
+        dao.insert(contactA)
+
+        var entries = dao.getByEmailList("test@gmail.com")
+
+        assertEquals(entries[0].email, "test@gmail.com")
+
+    }
 }
