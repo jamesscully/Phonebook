@@ -1,25 +1,22 @@
 package com.scullyapps.phonebook
 
-import android.content.Intent
+import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
 import android.widget.Toast
-import android.widget.Toolbar
 import androidx.activity.viewModels
-import androidx.core.util.PatternsCompat
+import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.Observer
 import com.jakewharton.rxbinding.widget.RxTextView
 import com.scullyapps.phonebook.data.ContactDB
 import com.scullyapps.phonebook.models.Contact
 import com.scullyapps.phonebook.viewmodels.EditDetailsActivityViewModel
-import com.scullyapps.phonebook.viewmodels.MainActivityViewModel
 import kotlinx.android.synthetic.main.activity_edit_details.*
 import rx.android.schedulers.AndroidSchedulers
-import rx.functions.Func1
-import rx.schedulers.Schedulers
 import java.util.concurrent.TimeUnit
 
 class EditDetailsActivity : AppCompatActivity() {
@@ -43,7 +40,8 @@ class EditDetailsActivity : AppCompatActivity() {
                 State.VIEWING -> {
                     enableEditing(false)
                     btn_process.text = "Viewing"
-                    setToolbarText("Viewing ${model.contact?.firstName} } ${model.contact?.secondName} ")
+                    btn_process.visibility = View.INVISIBLE
+                    setToolbarText("Viewing ${model.contact?.fullName}")
                 }
 
                 State.EDITING -> {
@@ -124,26 +122,101 @@ class EditDetailsActivity : AppCompatActivity() {
         val contact : Contact = model.buildContact()
 
         when(model.state.value) {
-            State.EDITING -> {
-                // update
-                ContactDB.update(contact)
-            }
-
+            State.EDITING -> ContactDB.update(contact)
             State.CREATING -> {
                 ContactDB.insert(contact)
+                Toast.makeText(this, getString(R.string.toast_saved_contact, contact.fullName), Toast.LENGTH_SHORT).show()
             }
-
-            State.VIEWING -> {
-                Log.w(TAG, "Attempt to save/update contact when in viewing mode?")
+            else -> {
+                Log.w(TAG, "Attempt to save/update when in viewing mode?")
             }
         }
+
+        // update model variables, back to viewmode
+        model.contact = contact
+        model.state.value = State.VIEWING
 
         Log.d(TAG, "Built contact: \n ${model.buildContact()}")
     }
 
+    private fun setUiState(state : State) {
+        model.state.value = state
+    }
+
+    override fun onBackPressed() {
+        Log.d(TAG, "Back pressed, edited: ${model.edited}")
+
+        when(model.state.value) {
+            State.VIEWING -> super.onBackPressed()
+            State.EDITING -> {
+                if(model.edited)
+                    onUnsavedChanges(false)
+                else
+                    setUiState(State.VIEWING)
+            }
+            State.CREATING -> onUnsavedChanges(true)
+        }
+    }
+
+    /*
+        There are only two states for this to fire from -
+        - Exiting edit mode (go to view mode)
+        - Creation of contact (leave activity)
+     */
+    private fun onUnsavedChanges(exitActivity : Boolean = false) {
+        val dialog = DataWarningDialog(this)
+
+        dialog.setPositiveButton("Abandon") { d, i ->
+            if(exitActivity) {
+                finish()
+            } else {
+                // load as if we were viewing
+                fillForm()
+                model.state.value = State.VIEWING
+            }
+        }
+
+        dialog.create().show()
+    }
+
+    // On deletion of this contact
+    private fun onDelete() {
+        val dialog = DataWarningDialog(this)
+            .setMessage("Are you sure you wish to delete ${model.firstName.value}?\nThis action cannot be undone!")
+            .setPositiveButton("Delete") {d, i ->
+                if(model.contact != null)
+                    ContactDB.delete(model.contact!!)
+                finish()
+            }
+        dialog.create().show()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.contact_menu, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId) {
+            R.id.menu_contact_delete -> {
+                onDelete()
+            }
+
+            R.id.menu_contact_edit -> {
+                // toggle between edit/view on double tap
+                if(model.state.value == State.EDITING)
+                    model.state.value = State.VIEWING
+                else
+                    model.state.value = State.EDITING
+            }
+        }
+
+        return super.onOptionsItemSelected(item)
+    }
+
+
     // trigger UI events if we're valid
     private fun formValidation() {
-
         // add flags for validity here
         val formValid = (model.phoneValid && model.emailValid)
 
@@ -166,6 +239,20 @@ class EditDetailsActivity : AppCompatActivity() {
         etxt_phonenumber.isEnabled = lock
         etxt_edit_address.isEnabled = lock
 
-        btn_process.isEnabled = lock
+        if(lock)
+            btn_process.visibility = View.VISIBLE
+        else
+            btn_process.visibility = View.INVISIBLE
+    }
+
+    inner class DataWarningDialog(context: Context) : AlertDialog.Builder(context) {
+        init {
+            setCancelable(false)
+            setTitle("Unsaved Changes")
+            setMessage("Are you sure you wish to abandon these changes?")
+            setNegativeButton("Cancel") { d, _ ->
+                d.cancel()
+            }
+        }
     }
 }

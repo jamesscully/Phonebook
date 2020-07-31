@@ -29,6 +29,12 @@ class EditDetailsActivityViewModel : ViewModel() {
     var emailValid : Boolean = false
     var phoneValid : Boolean = false
 
+    val edited : Boolean
+        get() {
+            // we've edited if contact exists, and the new build doesn't match
+        return (contact != null) && !(contact!!.equalByData(buildContact()))
+    }
+
     fun loadContact(c : Contact) {
         contact = c
         firstName.postValue(c.firstName)

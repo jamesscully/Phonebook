@@ -25,6 +25,8 @@ data class Contact(
 
     constructor(first: String, second: String, email: String, phone: String, address: String? ) : this(0, first, second, email, phone, address) {}
 
+    val fullName get() ="$firstName $secondName"
+
     /**
      * Compare contacts based on data only, not their _id
      */
