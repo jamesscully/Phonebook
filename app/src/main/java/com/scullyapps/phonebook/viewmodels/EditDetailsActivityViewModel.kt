@@ -39,7 +39,10 @@ class EditDetailsActivityViewModel : ViewModel() {
     }
 
     fun buildContact(): Contact {
-        return Contact(contact!!.cid, firstName.value!!, secondName.value!!, email.value!!, phone.value!!, address.value)
+        if(contact != null)
+            return Contact(contact!!.cid, firstName.value!!, secondName.value!!, email.value!!, phone.value!!, address.value)
+        else
+            return Contact(0, firstName.value!!, secondName.value!!, email.value!!, phone.value!!, address.value)
     }
 
 }

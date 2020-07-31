@@ -1,11 +1,13 @@
 package com.scullyapps.phonebook
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.widget.Toast
+import android.widget.Toolbar
 import androidx.activity.viewModels
 import androidx.core.util.PatternsCompat
 import androidx.lifecycle.Observer
@@ -41,16 +43,19 @@ class EditDetailsActivity : AppCompatActivity() {
                 State.VIEWING -> {
                     enableEditing(false)
                     btn_process.text = "Viewing"
+                    setToolbarText("Viewing ${model.contact?.firstName} } ${model.contact?.secondName} ")
                 }
 
                 State.EDITING -> {
                     enableEditing(true)
                     btn_process.text = getString(R.string.form_btn_update)
+                    setToolbarText("Updating ${model.contact?.firstName}")
                 }
 
                 State.CREATING -> {
                     enableEditing(true)
                     btn_process.text = getString(R.string.form_btn_create)
+                    setToolbarText("Creating new contact")
                 }
 
                 null -> {
@@ -72,6 +77,11 @@ class EditDetailsActivity : AppCompatActivity() {
         }
 
         setupObservers()
+    }
+
+    private fun setToolbarText(s : String) {
+        val toolbar = supportActionBar
+        toolbar?.let { title = s }
     }
 
     private fun setupObservers() {
@@ -155,5 +165,7 @@ class EditDetailsActivity : AppCompatActivity() {
         etxt_edit_email.isEnabled = lock
         etxt_phonenumber.isEnabled = lock
         etxt_edit_address.isEnabled = lock
+
+        btn_process.isEnabled = lock
     }
 }
