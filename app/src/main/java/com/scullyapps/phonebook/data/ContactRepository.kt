@@ -22,6 +22,10 @@ class ContactRepository {
         return GetAllContactsTask().execute().get()
     }
 
+    fun getByFullName(fullName: String) : List<Contact>? {
+        return GetByFullNameTask("%${fullName}%").execute().get()
+    }
+
     companion object {
         private val db : ContactDB = ContactDB.getInstance()
 
@@ -45,6 +49,12 @@ class ContactRepository {
         private class GetByPhoneNumberTask(private val number: String) : AsyncTask<Void, Void, List<Contact>>() {
             override fun doInBackground(vararg p0: Void?): List<Contact> {
                     return db.contactDAO().getByPhoneNum(number)
+            }
+        }
+
+        private class GetByFullNameTask(private val fullName: String) : AsyncTask<Void, Void, List<Contact>>() {
+            override fun doInBackground(vararg p0: Void?): List<Contact> {
+                return db.contactDAO().getByFullName(fullName)
             }
         }
 

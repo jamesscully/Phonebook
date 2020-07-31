@@ -28,6 +28,9 @@ interface ContactDAO {
     @Query("SELECT * FROM contact WHERE first_name LIKE :first AND second_name LIKE :second")
     fun getByName(first : String, second : String) : Contact
 
+    @Query("SELECT * FROM contact WHERE  (first_name || ' ' ||second_name) LIKE :fullName")
+    fun getByFullName(fullName: String) : List<Contact>
+
     @Query("SELECT * FROM contact WHERE phone=:number")
     fun getByPhoneNum(number : String) : List<Contact>
 

@@ -42,7 +42,6 @@ class MainActivity : AppCompatActivity() {
         recycler.adapter = adapter
         recycler.layoutManager = LinearLayoutManager(this)
 
-        // If we have no contacts, show placeholder; else update recycler
         model.shownContacts.observe(this, Observer { contacts ->
             Log.d(TAG, "Shown contacts was updated")
 
@@ -52,13 +51,9 @@ class MainActivity : AppCompatActivity() {
                 main_placeholder.visibility = View.INVISIBLE
             }
 
-            if(contacts == null)
-                adapter.setData(emptyList())
-            else
-                adapter.setData(contacts)
-
+            // if null, send empty list
+            adapter.setData(contacts ?: emptyList())
             adapter.notifyDataSetChanged()
-
         })
     }
 
@@ -85,30 +80,37 @@ class MainActivity : AppCompatActivity() {
                 launchContactDetails(EditDetailsActivity.State.CREATING)
             }
         }
-
         return super.onOptionsItemSelected(item)
     }
 
     fun search(term : String) {
-        Log.d(TAG, "Searching term: $term")
+        Log.d(TAG, "Searching term: [$term]")
 
         // prevents accidental (any) whitespace from hiding search
-        if(term.matches(Regex("\\w*"))){
+        if(term.matches(Regex("^\\s*\$")) || term.isEmpty()){
             model.resetSearch()
         }
 
         if(Contact.isValidEmail(term)) {
             Log.d(TAG, "Found valid email: $term")
             Log.d(TAG, "Records: ${ContactDB.getDao().getByEmail(term).value}")
-            model.updateShownContacts(model.repo.getByEmail(term))
-            return
-        }
-        if(Contact.isValidPhoneNumber(term)) {
-            Log.d(TAG, "Found valid phonenum: $term")
-            model.updateShownContacts(model.repo.getByPhoneNumber(term))
+            model.apply {
+                updateShownContacts(repo.getByEmail(term))
+            }
             return
         }
 
+        if(Contact.isValidPhoneNumber(term)) {
+            Log.d(TAG, "Found valid phonenum: $term")
+            model.apply {
+                updateShownContacts(repo.getByPhoneNumber(term))
+            }
+            return
+        }
+
+        model.apply {
+            updateShownContacts(repo.getByFullName(term))
+        }
     }
 
     // encapsulates the process of launching contact details, meaning a state will be required
