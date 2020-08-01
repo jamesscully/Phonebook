@@ -1,7 +1,6 @@
 package com.scullyapps.phonebook
 
 import android.content.Context
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -10,6 +9,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import com.jakewharton.rxbinding.widget.RxTextView
 import com.scullyapps.phonebook.data.ContactDB

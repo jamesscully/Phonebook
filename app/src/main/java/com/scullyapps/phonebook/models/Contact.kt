@@ -1,15 +1,12 @@
 package com.scullyapps.phonebook.models
 
 
-import android.util.Log
-import android.util.Patterns
 import androidx.core.util.PatternsCompat
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import java.io.Serializable
-import java.util.regex.Matcher
 
 @Entity
 data class Contact(

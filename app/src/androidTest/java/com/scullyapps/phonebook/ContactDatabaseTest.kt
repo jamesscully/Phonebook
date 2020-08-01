@@ -1,18 +1,15 @@
 package com.scullyapps.phonebook
 
 import android.util.Log
-import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.scullyapps.phonebook.data.ContactDB
 import com.scullyapps.phonebook.models.Contact
 import com.scullyapps.phonebook.models.ContactDAO
 import org.junit.After
-
-import org.junit.Test
-import org.junit.runner.RunWith
-
 import org.junit.Assert.*
 import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
 import java.io.IOException
 
 /**

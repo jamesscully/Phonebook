@@ -1,12 +1,9 @@
 package com.scullyapps.phonebook.viewmodels
 
 
-import android.util.Log
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.scullyapps.phonebook.EditDetailsActivity
-import com.scullyapps.phonebook.data.ContactRepository
 import com.scullyapps.phonebook.models.Contact
 
 class EditDetailsActivityViewModel : ViewModel() {

@@ -2,7 +2,6 @@ package com.scullyapps.phonebook.data
 
 
 import android.os.AsyncTask
-import androidx.lifecycle.LiveData
 import com.scullyapps.phonebook.models.Contact
 
 class ContactRepository {

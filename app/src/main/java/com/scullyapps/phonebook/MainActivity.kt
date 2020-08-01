@@ -1,7 +1,6 @@
 package com.scullyapps.phonebook
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -9,11 +8,11 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.SearchView
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.jakewharton.rxbinding.widget.RxSearchView
 import com.scullyapps.phonebook.adapters.ContactsRecyclerAdapter
-import com.scullyapps.phonebook.data.ContactDB
 import com.scullyapps.phonebook.models.Contact
 import com.scullyapps.phonebook.viewmodels.MainActivityViewModel
 import kotlinx.android.synthetic.main.activity_main.*
