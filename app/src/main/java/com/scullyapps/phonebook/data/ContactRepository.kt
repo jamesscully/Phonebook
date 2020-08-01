@@ -8,8 +8,6 @@ import com.scullyapps.phonebook.models.Contact
 class ContactRepository {
     private val TAG: String = "ContactRepository"
 
-    val contacts : LiveData<List<Contact>> = ContactDB.getDao().getAll()
-
     fun getByPhoneNumber(number: String) : List<Contact>? {
         return GetByPhoneNumberTask(number).execute().get()
     }

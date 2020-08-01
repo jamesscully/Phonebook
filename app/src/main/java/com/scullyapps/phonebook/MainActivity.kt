@@ -9,7 +9,6 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.SearchView
 import androidx.activity.viewModels
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.jakewharton.rxbinding.widget.RxSearchView
@@ -19,7 +18,6 @@ import com.scullyapps.phonebook.models.Contact
 import com.scullyapps.phonebook.viewmodels.MainActivityViewModel
 import kotlinx.android.synthetic.main.activity_main.*
 import rx.android.schedulers.AndroidSchedulers
-import java.lang.NumberFormatException
 import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
@@ -42,32 +40,32 @@ class MainActivity : AppCompatActivity() {
         recycler.adapter = adapter
         recycler.layoutManager = LinearLayoutManager(this)
 
-        model.isSearching.observe(this, Observer {searching ->
-            Log.d(TAG, "Searching bool changed: $searching")
-            if(searching) {
-                txt_main_placeholder.setText(R.string.placeholder_text_searching)
-                supportActionBar?.title = ""
-            } else {
-                txt_main_placeholder.setText(R.string.placeholder_text)
-                supportActionBar?.title = getString(R.string.app_name)
-            }
-        })
-
         model.shownContacts.observe(this, Observer { contacts ->
+            // if null or empty, show placeholder
+            setPlaceholderVisible(contacts.isNullOrEmpty())
 
-            if(contacts.isNullOrEmpty()) {
-                main_placeholder.visibility = View.VISIBLE
-            } else {
-                main_placeholder.visibility = View.INVISIBLE
-            }
+            // alias model variables to defaults
+            val searching = model.isSearching.value ?: false
+            val searchTerm = model.searchTerm.value ?: ""
 
-            if(model.isSearching.value == true && model.searchTerm.value?.isNotEmpty() == true)
-                txt_main_searchresults.text = getString(R.string.search_result_header, contacts.size, model.searchTerm.value)
+            var searchResultText = getString(R.string.search_result_header_untermed, contacts.size)
+
+            // Set 'found 8 results' or 'found 8 results for X'
+            if(searching && searchTerm.isNotEmpty())
+                searchResultText = getString(R.string.search_result_header_termed, contacts.size, model.searchTerm.value)
+
+            txt_main_searchresults.text = searchResultText
 
             // if null, send empty list
             adapter.setData(contacts ?: emptyList())
             adapter.notifyDataSetChanged()
         })
+    }
+
+    override fun onResume() {
+        // when we arrive back at the activity, reload contacts from database
+        model.loadAllContacts()
+        super.onResume()
     }
 
     //
@@ -77,15 +75,18 @@ class MainActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.main_menu, menu)
 
+        // If text in search bar changes, call upon the search function
         val searchBar : SearchView = menu?.findItem(R.id.main_menu_search)?.actionView as SearchView
         RxSearchView.queryTextChanges(searchBar)
-            .debounce(1000, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
+            .debounce(300, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
+            .skip(1 )
             .subscribe {term ->
                 search(term.toString())
             }
 
         return super.onCreateOptionsMenu(menu)
     }
+
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when(item.itemId) {
@@ -96,7 +97,21 @@ class MainActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    fun search(term : String) {
+    // set our placeholder text + visibility
+    private fun setPlaceholderVisible(visible : Boolean) {
+        if(model.isSearching.value == true)
+            txt_main_placeholder.text = getString(R.string.placeholder_text_searching)
+        else
+            txt_main_placeholder.text = getString(R.string.placeholder_text)
+
+        if(visible) {
+            main_placeholder.visibility = View.VISIBLE
+        } else {
+            main_placeholder.visibility = View.GONE
+        }
+    }
+
+    private fun search(term : String) {
         Log.d(TAG, "Searching term: [$term]")
 
         // prevents accidental (any) whitespace from hiding search
@@ -104,28 +119,22 @@ class MainActivity : AppCompatActivity() {
             model.resetSearch()
         }
 
-        model.isSearching.value = true
         model.searchTerm.value = term
 
-        if(Contact.isValidEmail(term)) {
-            Log.d(TAG, "Found valid email: $term")
-            Log.d(TAG, "Records: ${ContactDB.getDao().getByEmail(term).value}")
-            model.apply {
-                updateShownContacts(repo.getByEmail(term))
-            }
-            return
-        }
+        var newContacts : List<Contact>? = emptyList()
 
-        if(Contact.isValidPhoneNumber(term)) {
-            Log.d(TAG, "Found valid phonenum: $term")
-            model.apply {
-                updateShownContacts(repo.getByPhoneNumber(term))
-            }
-            return
+        // switchout contacts we send to be shown
+
+        newContacts = if(Contact.isValidEmail(term)) {
+            model.repo.getByEmail(term)
+        } else if (Contact.isValidPhoneNumber(term)) {
+            model.repo.getByPhoneNumber(term)
+        } else {
+            model.repo.getByFullName(term)
         }
 
         model.apply {
-            updateShownContacts(repo.getByFullName(term))
+            updateShownContacts(newContacts)
         }
     }
 

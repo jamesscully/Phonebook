@@ -35,11 +35,6 @@ abstract class ContactDB : RoomDatabase() {
             return testdb as ContactDB
         }
 
-        fun getDao(): ContactDAO {
-            val db = getInstance()
-            return db.contactDAO()
-        }
-
 
         // Wrapper functions
 

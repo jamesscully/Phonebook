@@ -23,12 +23,16 @@ class MainActivityViewModel : ViewModel() {
         updateShownContacts(repo.getAllContacts())
     }
 
-    fun resetSearch() {
+    fun loadAllContacts() {
         val list = repo.getAllContacts()
         Log.d(TAG, "Found list of contacts: $list")
         updateShownContacts(list)
+    }
+
+    fun resetSearch() {
         isSearching.value = false
         searchTerm.value = ""
+        loadAllContacts()
     }
 
     // code before searching/updating can go here

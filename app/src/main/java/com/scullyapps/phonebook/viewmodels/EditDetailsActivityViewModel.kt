@@ -16,9 +16,7 @@ class EditDetailsActivityViewModel : ViewModel() {
     var contact: Contact? = null
 
     // we can assume viewing by default - this is not "destructive"
-    var state = MutableLiveData<EditDetailsActivity.State>().apply {
-        value = EditDetailsActivity.State.VIEWING
-    }
+    var state = MutableLiveData<EditDetailsActivity.State>()
 
     var firstName   = MutableLiveData<String>("")
     var secondName  = MutableLiveData<String>("")

@@ -35,7 +35,30 @@ class EditDetailsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_edit_details)
 
+        setupStateObserver()
+
+        btn_process.setOnClickListener {
+            process()
+        }
+
+        // only set state if we're a fresh activity
+        if(model.state.value == null)
+            model.state.postValue(intent.getSerializableExtra("state") as State)
+
+        // if we're being sent a contact, load details + 'edit'-themed UI,
+        if(intent.hasExtra("contact") && model.contact == null) {
+            model.loadContact(intent.getSerializableExtra("contact") as Contact)
+            fillForm()
+        }
+
+        setupObservers()
+    }
+
+
+
+    private fun setupStateObserver() {
         model.state.observe(this, Observer { state ->
+            Log.d(TAG, "State changed: $state")
             when(state) {
                 State.VIEWING -> {
                     enableEditing(false)
@@ -61,27 +84,7 @@ class EditDetailsActivity : AppCompatActivity() {
                 }
             }
         })
-
-        btn_process.setOnClickListener {
-            process()
-        }
-
-        model.state.postValue(intent.getSerializableExtra("state") as State)
-
-        // if we're being sent a contact, load details + 'edit'-themed UI,
-        if(intent.hasExtra("contact")) {
-            model.loadContact(intent.getSerializableExtra("contact") as Contact)
-            fillForm()
-        }
-
-        setupObservers()
     }
-
-    private fun setToolbarText(s : String) {
-        val toolbar = supportActionBar
-        toolbar?.let { title = s }
-    }
-
     private fun setupObservers() {
         // Unvalidated - simply write to model
         RxTextView.textChanges(etxt_edit_firstname).subscribe { s -> model.firstName.postValue(s.toString()) }
@@ -89,30 +92,32 @@ class EditDetailsActivity : AppCompatActivity() {
         RxTextView.textChanges(etxt_edit_address).subscribe { s -> model.address.postValue(s.toString()) }
 
         RxTextView.textChanges(etxt_edit_email)
-            .debounce(1000, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
+            .debounce(400, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
             .subscribe({ s ->
                 // set validity flag in model
                 model.emailValid = Contact.isValidEmail(s.toString())
 
-                if(model.emailValid) {
-                    model.email.postValue(s.toString())
+                Log.d(TAG, "[${s.toString()}]")
+
+                if(model.emailValid || s.isEmpty()) {
+                    model.email.value = s.toString()
                 } else {
                     etxt_edit_email.error = getString(R.string.error_email)
                 }
 
                 formValidation()
-            }, {t: Throwable? -> Log.e(TAG, t.toString())}
-            )
+            }, {t: Throwable? -> Log.e(TAG, t.toString())})
 
         RxTextView.textChanges(etxt_phonenumber)
-            .debounce(1000, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
+            .debounce(400, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
             .subscribe({s ->
                 model.phoneValid = Contact.isValidPhoneNumber(s.toString())
-                if(model.phoneValid) {
-                    model.phone.postValue(s.toString())
+                if(model.phoneValid || s.isEmpty()) {
+                    model.phone.value = s.toString()
                 } else {
                     etxt_phonenumber.error = getString(R.string.error_phone)
                 }
+
                 formValidation()
             }, {t: Throwable? -> Log.e(TAG, t.toString())})
 
@@ -125,22 +130,21 @@ class EditDetailsActivity : AppCompatActivity() {
             State.EDITING -> ContactDB.update(contact)
             State.CREATING -> {
                 ContactDB.insert(contact)
-                Toast.makeText(this, getString(R.string.toast_saved_contact, contact.fullName), Toast.LENGTH_SHORT).show()
+                // Requirement
+                finish()
             }
             else -> {
                 Log.w(TAG, "Attempt to save/update when in viewing mode?")
             }
         }
 
+        Toast.makeText(this, getString(R.string.toast_saved_contact, contact.fullName), Toast.LENGTH_SHORT).show()
+
         // update model variables, back to viewmode
         model.contact = contact
-        model.state.value = State.VIEWING
+        setUiState(State.VIEWING)
 
         Log.d(TAG, "Built contact: \n ${model.buildContact()}")
-    }
-
-    private fun setUiState(state : State) {
-        model.state.value = state
     }
 
     override fun onBackPressed() {
@@ -172,7 +176,7 @@ class EditDetailsActivity : AppCompatActivity() {
             } else {
                 // load as if we were viewing
                 fillForm()
-                model.state.value = State.VIEWING
+                setUiState(State.VIEWING)
             }
         }
 
@@ -191,6 +195,10 @@ class EditDetailsActivity : AppCompatActivity() {
         dialog.create().show()
     }
 
+    //
+    // Menu overrides
+    //
+
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.contact_menu, menu)
         return super.onCreateOptionsMenu(menu)
@@ -203,25 +211,25 @@ class EditDetailsActivity : AppCompatActivity() {
             }
 
             R.id.menu_contact_edit -> {
-                // toggle between edit/view on double tap
-                if(model.state.value == State.EDITING)
-                    model.state.value = State.VIEWING
-                else
-                    model.state.value = State.EDITING
+                if(model.state.value == State.VIEWING) {
+                    setUiState(State.EDITING)
+                }
             }
         }
 
         return super.onOptionsItemSelected(item)
     }
 
+    //
+    // Form functions
+    //
 
     // trigger UI events if we're valid
     private fun formValidation() {
         // add flags for validity here
         val formValid = (model.phoneValid && model.emailValid)
 
-        // for now we only need a simple button disable/enable
-        btn_process.isEnabled = formValid
+        btn_process.setVisible(formValid)
     }
 
     private fun fillForm() {
@@ -239,10 +247,29 @@ class EditDetailsActivity : AppCompatActivity() {
         etxt_phonenumber.isEnabled = lock
         etxt_edit_address.isEnabled = lock
 
-        if(lock)
-            btn_process.visibility = View.VISIBLE
-        else
-            btn_process.visibility = View.INVISIBLE
+        btn_process.setVisible(lock)
+    }
+
+    //
+    // Helpers
+    //
+
+    private fun setUiState(state : State) {
+        model.state.value = state
+    }
+
+    // Extension to get rid of these lines of code
+    private fun View.setVisible(b: Boolean) {
+        if(b) {
+            this.visibility = View.VISIBLE
+        } else {
+            this.visibility = View.INVISIBLE
+        }
+    }
+
+    private fun setToolbarText(s : String) {
+        val toolbar = supportActionBar
+        toolbar?.let { title = s }
     }
 
     inner class DataWarningDialog(context: Context) : AlertDialog.Builder(context) {
